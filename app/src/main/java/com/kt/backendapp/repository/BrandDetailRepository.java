@@ -21,9 +21,10 @@ public interface BrandDetailRepository extends JpaRepository<BrandDetail, Long> 
      * 브랜드 조회수 증가
      * - 브랜드 상세 페이지 조회 시 호출
      * - 동시성 문제 방지를 위해 UPDATE 쿼리 사용
+     * - null 안전성을 위해 COALESCE 사용
      */
     @Modifying
-    @Query("UPDATE BrandDetail bd SET bd.viewCount = bd.viewCount + 1 WHERE bd.brand.brandId = :brandId")
+    @Query("UPDATE BrandDetail bd SET bd.viewCount = COALESCE(bd.viewCount, 0) + 1 WHERE bd.brand.brandId = :brandId")
     void incrementViewCount(@Param("brandId") Long brandId);
     
     /**

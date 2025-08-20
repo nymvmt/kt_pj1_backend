@@ -22,8 +22,9 @@ import java.util.stream.Collectors;
 public class UserBrandService {
     
     private final BrandRepository brandRepository;
-    private final BrandDetailRepository brandDetailRepository;
     private final SavedBrandRepository savedBrandRepository;
+    private final BrandDetailRepository brandDetailRepository;
+    private final ViewCountService viewCountService;
     
     /**
      * 유저용 브랜드 목록 조회 (찜 상태 포함)
@@ -76,18 +77,8 @@ public class UserBrandService {
             
             log.debug("브랜드 기본 정보 조회 완료: {}", brand.getBrandName());
             
-            // 조회수 증가 (시스템 관리값) - 임시로 비활성화하여 문제 격리
-            log.debug("조회수 증가 기능을 임시로 비활성화했습니다.");
-            // TODO: 조회수 증가 기능 활성화
-            // try {
-            //     log.debug("조회수 증가 시작: brandId={}", brandId);
-            //     brandDetailRepository.incrementViewCount(brandId);
-            //     log.debug("조회수 증가 완료");
-            // } catch (Exception e) {
-            //     log.error("조회수 증가 중 오류 발생: {}", e.getMessage(), e);
-            //     // 조회수 증가 실패는 전체 요청을 실패시키지 않음
-            //     // 상세한 오류 로그를 남기고 계속 진행
-            // }
+            // 조회수 증가 (시스템 관리값) - 공통 서비스 사용
+            viewCountService.incrementViewCount(brandId);
             
             // 찜 상태 확인 - null check 강화
             boolean isSaved = false;

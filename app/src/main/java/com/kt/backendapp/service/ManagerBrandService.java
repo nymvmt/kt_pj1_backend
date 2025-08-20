@@ -7,6 +7,7 @@ import com.kt.backendapp.dto.response.brand.BrandListResponse;
 import com.kt.backendapp.entity.*;
 import com.kt.backendapp.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,11 +17,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class ManagerBrandService {
     
     private final BrandRepository brandRepository;
     private final BrandCategoryRepository brandCategoryRepository;
     private final BrandManagerRepository brandManagerRepository;
+    private final ViewCountService viewCountService;
     
     /**
      * 매니저의 브랜드 목록 조회 (전체 목록)
@@ -38,6 +41,7 @@ public class ManagerBrandService {
      * 매니저의 브랜드 상세 조회
      * GET /api/v1/manager/brands/{id}
      */
+    @Transactional
     public BrandDetailResponse getManagerBrandDetail(Long brandId, Long managerId) {
         // 브랜드 조회 및 매니저 권한 확인
         Brand brand = brandRepository.findById(brandId)
@@ -47,6 +51,9 @@ public class ManagerBrandService {
         if (!brand.getManager().getManagerId().equals(managerId)) {
             throw new IllegalArgumentException("해당 브랜드에 대한 권한이 없습니다.");
         }
+        
+        // 조회수 증가 (시스템 관리값) - 공통 서비스 사용
+        viewCountService.incrementViewCount(brandId);
         
         // 매니저용이므로 카테고리 통계, 관련 브랜드는 제외하고 기본 정보만 반환
         return BrandDetailResponse.builder()

@@ -24,7 +24,7 @@ public class BrandDetail {
     @JoinColumn(name = "brand_id")
     private Brand brand;
     
-    @Column(name = "view_count", nullable = false)
+    @Column(name = "view_count", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     @Builder.Default
     private Long viewCount = 0L;
     

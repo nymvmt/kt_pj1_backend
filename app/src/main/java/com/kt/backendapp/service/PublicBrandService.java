@@ -4,6 +4,7 @@ import com.kt.backendapp.dto.response.brand.BrandDetailResponse;
 import com.kt.backendapp.dto.response.brand.BrandListResponse;
 import com.kt.backendapp.entity.Brand;
 import com.kt.backendapp.repository.BrandRepository;
+import com.kt.backendapp.repository.BrandDetailRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class PublicBrandService {
     
     private final BrandRepository brandRepository;
+    private final ViewCountService viewCountService;
     
     /**
      * 공개 브랜드 목록 조회 (기본 정보만)
@@ -53,6 +55,7 @@ public class PublicBrandService {
     /**
      * 공개 브랜드 상세 조회 (기본 정보만)
      */
+    @Transactional
     public BrandDetailResponse getPublicBrandDetail(Long brandId) {
         log.info("=== 공개 브랜드 상세 조회 시작: brandId={} ===", brandId);
         
@@ -61,8 +64,8 @@ public class PublicBrandService {
             Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 브랜드입니다."));
             
-            // 조회수 증가 (시스템 관리값)
-            // 공개 API에서는 조회수 증가하지 않음 (유저 API에서만)
+            // 조회수 증가 (시스템 관리값) - 공통 서비스 사용
+            viewCountService.incrementViewCount(brandId);
             
             // 공개용 응답 생성 (찜 상태, 관련 브랜드, 카테고리 통계 제외)
             return BrandDetailResponse.from(brand, false, null, null);
