@@ -9,6 +9,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.List;
 
 @Data
@@ -87,33 +90,86 @@ public class BrandDetailResponse {
             return null;
         }
         
-        ManagerInfo managerInfo = null;
-        if (brand.getManager() != null) {
-            managerInfo = ManagerInfo.builder()
-                .managerId(brand.getManager().getManagerId())
-                .name(brand.getManager().getName() != null ? brand.getManager().getName() : "")
-                .email(brand.getManager().getEmail() != null ? brand.getManager().getEmail() : "")
-                .phone(brand.getManager().getPhone() != null ? brand.getManager().getPhone() : "")
-                .build();
+        // 기본 정보 null check 강화
+        Long brandId = brand.getBrandId();
+        String brandName = brand.getBrandName() != null ? brand.getBrandName() : "";
+        
+        if (brandId == null) {
+            throw new IllegalArgumentException("브랜드 ID가 null입니다.");
         }
         
-        // 연관 엔티티 안전하게 접근
+        // 매니저 정보 null check 강화
+        ManagerInfo managerInfo = null;
+        if (brand.getManager() != null) {
+            try {
+                managerInfo = ManagerInfo.builder()
+                    .managerId(brand.getManager().getManagerId())
+                    .name(brand.getManager().getName() != null ? brand.getManager().getName() : "")
+                    .email(brand.getManager().getEmail() != null ? brand.getManager().getEmail() : "")
+                    .phone(brand.getManager().getPhone() != null ? brand.getManager().getPhone() : "")
+                    .build();
+            } catch (Exception e) {
+                // 매니저 정보 생성 실패 시 null로 설정
+                managerInfo = null;
+            }
+        }
+        
+        // 연관 엔티티 안전하게 접근 - null check 강화
         BrandDetail details = brand.getDetails();
         BrandCategory category = brand.getCategory();
         
+        // 카테고리명 안전하게 추출
+        String categoryName = "";
+        if (category != null) {
+            try {
+                categoryName = category.getCategoryName() != null ? category.getCategoryName() : "";
+            } catch (Exception e) {
+                categoryName = "";
+            }
+        }
+        
+        // 상세 정보 안전하게 추출
+        Long viewCount = 0L;
+        Long saveCount = 0L;
+        BigDecimal initialCost = null;
+        BigDecimal totalInvestment = null;
+        BigDecimal avgMonthlyRevenue = null;
+        Integer storeCount = null;
+        String brandDescription = "";
+        
+        if (details != null) {
+            try {
+                viewCount = details.getViewCount() != null ? details.getViewCount() : 0L;
+                saveCount = details.getSaveCount() != null ? details.getSaveCount() : 0L;
+                initialCost = details.getInitialCost();
+                totalInvestment = details.getTotalInvestment();
+                avgMonthlyRevenue = details.getAvgMonthlyRevenue();
+                storeCount = details.getStoreCount();
+                brandDescription = details.getBrandDescription() != null ? details.getBrandDescription() : "";
+            } catch (Exception e) {
+                // 상세 정보 추출 실패 시 기본값 사용
+                viewCount = 0L;
+                saveCount = 0L;
+                initialCost = null;
+                totalInvestment = null;
+                avgMonthlyRevenue = null;
+                storeCount = null;
+                brandDescription = "";
+            }
+        }
+        
         return BrandDetailResponse.builder()
-            .brandId(brand.getBrandId())
-            .brandName(brand.getBrandName() != null ? brand.getBrandName() : "")
-            .categoryName(category != null && category.getCategoryName() != null ? 
-                        category.getCategoryName() : "")
+            .brandId(brandId)
+            .brandName(brandName)
+            .categoryName(categoryName)
             .manager(managerInfo)
-            .viewCount(details != null ? details.getViewCount() : 0L)
-            .saveCount(details != null ? details.getSaveCount() : 0L)
-            .initialCost(details != null ? details.getInitialCost() : null)
-            .totalInvestment(details != null ? details.getTotalInvestment() : null)
-            .avgMonthlyRevenue(details != null ? details.getAvgMonthlyRevenue() : null)
-            .storeCount(details != null ? details.getStoreCount() : null)
-            .brandDescription(details != null ? details.getBrandDescription() : "")
+            .viewCount(viewCount)
+            .saveCount(saveCount)
+            .initialCost(initialCost)
+            .totalInvestment(totalInvestment)
+            .avgMonthlyRevenue(avgMonthlyRevenue)
+            .storeCount(storeCount)
+            .brandDescription(brandDescription)
             .isSaved(false) // 기본값, Service에서 설정
             .build();
     }
@@ -121,9 +177,23 @@ public class BrandDetailResponse {
     // 찜 상태, 카테고리 통계, 관련 브랜드 포함 변환 메소드
     public static BrandDetailResponse from(Brand brand, boolean isSaved, CategoryStats categoryStats, List<BrandListResponse> relatedBrands) {
         BrandDetailResponse response = from(brand);
-        response.setSaved(isSaved);
-        response.setCategoryStats(categoryStats);
-        response.setRelatedBrands(relatedBrands);
+        if (response != null) {
+            response.setSaved(isSaved);
+            response.setCategoryStats(categoryStats);
+            
+            // 관련 브랜드 null check 강화
+            List<BrandListResponse> safeRelatedBrands = new ArrayList<>();
+            if (relatedBrands != null) {
+                try {
+                    safeRelatedBrands = relatedBrands.stream()
+                        .filter(relatedBrand -> relatedBrand != null)
+                        .collect(Collectors.toList());
+                } catch (Exception e) {
+                    safeRelatedBrands = new ArrayList<>();
+                }
+            }
+            response.setRelatedBrands(safeRelatedBrands);
+        }
         return response;
     }
 }
