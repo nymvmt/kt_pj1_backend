@@ -18,8 +18,7 @@ public interface BrandManagerRepository extends JpaRepository<BrandManager, Long
            "(SELECT b.manager.managerId FROM Brand b WHERE b.brandId = :brandId)")
     Optional<BrandManager> findByBrandId(@Param("brandId") Long brandId);
     
-    // 브랜드매니저가 이미 다른 브랜드를 관리하는지 확인
-    @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END " +
-           "FROM Brand b WHERE b.manager.managerId = :managerId")
-    boolean hasAssignedBrand(@Param("managerId") Long managerId);
+    // 브랜드매니저가 관리하는 브랜드 개수 조회
+    @Query("SELECT COUNT(b) FROM Brand b WHERE b.manager.managerId = :managerId")
+    Long countManagedBrands(@Param("managerId") Long managerId);
 }

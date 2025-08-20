@@ -1,6 +1,8 @@
 package com.kt.backendapp.dto.response.brand;
 
 import com.kt.backendapp.entity.Brand;
+import com.kt.backendapp.entity.BrandDetail;
+import com.kt.backendapp.entity.BrandCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -81,28 +83,37 @@ public class BrandDetailResponse {
     
     // Entity → DTO 변환 메소드
     public static BrandDetailResponse from(Brand brand) {
+        if (brand == null) {
+            return null;
+        }
+        
         ManagerInfo managerInfo = null;
         if (brand.getManager() != null) {
             managerInfo = ManagerInfo.builder()
                 .managerId(brand.getManager().getManagerId())
-                .name(brand.getManager().getName())
-                .email(brand.getManager().getEmail())
-                .phone(brand.getManager().getPhone())
+                .name(brand.getManager().getName() != null ? brand.getManager().getName() : "")
+                .email(brand.getManager().getEmail() != null ? brand.getManager().getEmail() : "")
+                .phone(brand.getManager().getPhone() != null ? brand.getManager().getPhone() : "")
                 .build();
         }
         
+        // 연관 엔티티 안전하게 접근
+        BrandDetail details = brand.getDetails();
+        BrandCategory category = brand.getCategory();
+        
         return BrandDetailResponse.builder()
             .brandId(brand.getBrandId())
-            .brandName(brand.getBrandName())
-            .categoryName(brand.getCategory() != null ? brand.getCategory().getCategoryName() : null)
+            .brandName(brand.getBrandName() != null ? brand.getBrandName() : "")
+            .categoryName(category != null && category.getCategoryName() != null ? 
+                        category.getCategoryName() : "")
             .manager(managerInfo)
-            .viewCount(brand.getDetails() != null ? brand.getDetails().getViewCount() : 0L)
-            .saveCount(brand.getDetails() != null ? brand.getDetails().getSaveCount() : 0L)
-            .initialCost(brand.getDetails() != null ? brand.getDetails().getInitialCost() : null)
-            .totalInvestment(brand.getDetails() != null ? brand.getDetails().getTotalInvestment() : null)
-            .avgMonthlyRevenue(brand.getDetails() != null ? brand.getDetails().getAvgMonthlyRevenue() : null)
-            .storeCount(brand.getDetails() != null ? brand.getDetails().getStoreCount() : null)
-            .brandDescription(brand.getDetails() != null ? brand.getDetails().getBrandDescription() : null)
+            .viewCount(details != null ? details.getViewCount() : 0L)
+            .saveCount(details != null ? details.getSaveCount() : 0L)
+            .initialCost(details != null ? details.getInitialCost() : null)
+            .totalInvestment(details != null ? details.getTotalInvestment() : null)
+            .avgMonthlyRevenue(details != null ? details.getAvgMonthlyRevenue() : null)
+            .storeCount(details != null ? details.getStoreCount() : null)
+            .brandDescription(details != null ? details.getBrandDescription() : "")
             .isSaved(false) // 기본값, Service에서 설정
             .build();
     }

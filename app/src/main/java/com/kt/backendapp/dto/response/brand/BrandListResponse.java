@@ -27,15 +27,19 @@ public class BrandListResponse {
     
     // Entity → DTO 변환 메소드
     public static BrandListResponse from(Brand brand) {
+        if (brand == null) {
+            return null;
+        }
+        
         return BrandListResponse.builder()
             .brandId(brand.getBrandId())
-            .brandName(brand.getBrandName())
-            .categoryName(brand.getCategory() != null ? brand.getCategory().getCategoryName() : null)
+            .brandName(brand.getBrandName() != null ? brand.getBrandName() : "")
+            .categoryName(brand.getCategory() != null ? brand.getCategory().getCategoryName() : "")
             .viewCount(brand.getDetails() != null ? brand.getDetails().getViewCount() : 0L)
             .saveCount(brand.getDetails() != null ? brand.getDetails().getSaveCount() : 0L)
             .initialCost(brand.getDetails() != null ? brand.getDetails().getInitialCost() : null)
             .avgMonthlyRevenue(brand.getDetails() != null ? brand.getDetails().getAvgMonthlyRevenue() : null)
-            .managerName(brand.getManager() != null ? brand.getManager().getName() : null)
+            .managerName(brand.getManager() != null ? brand.getManager().getName() : "")
             .isSaved(false) // 기본값, Service에서 설정
             .build();
     }

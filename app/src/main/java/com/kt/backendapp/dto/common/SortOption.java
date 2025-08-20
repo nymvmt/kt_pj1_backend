@@ -7,6 +7,8 @@ public enum SortOption {
     VIEW_COUNT_DESC("details.viewCount", "desc"),
     SAVE_COUNT_ASC("details.saveCount", "asc"),
     SAVE_COUNT_DESC("details.saveCount", "desc"),
+    INITIAL_COST_ASC("details.initialCost", "asc"),
+    INITIAL_COST_DESC("details.initialCost", "desc"),
     CREATED_AT_ASC("createdAt", "asc"),
     CREATED_AT_DESC("createdAt", "desc");
     

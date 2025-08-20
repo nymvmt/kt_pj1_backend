@@ -25,7 +25,7 @@ public class Brand {
     @JoinColumn(name = "category_id")
     private BrandCategory category;
     
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private BrandManager manager;
     
