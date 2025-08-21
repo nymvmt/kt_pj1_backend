@@ -1,6 +1,7 @@
 package com.kt.backendapp.dto.response.consultation;
 
 import com.kt.backendapp.entity.Consultation;
+import com.kt.backendapp.entity.UserResponseType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,7 +35,20 @@ public class ConsultationResponse {
     // 시간 정보
     private LocalDateTime createdAt;
     private LocalDateTime confirmedAt;
-    private LocalDateTime completedAt;
+
+    
+    // 일정 조정 관련 정보
+    private LocalDate adjustedDate;
+    private LocalTime adjustedTime;
+    private String adjustmentReason;
+    private LocalDateTime adjustmentRequestedAt;
+    
+    // 사용자 응답 관련 정보
+    private UserResponseType userResponse;
+    private LocalDateTime userResponseAt;
+    
+    // 활성 상태
+    private Boolean isActive;
     
     @Data
     @NoArgsConstructor
@@ -106,7 +120,14 @@ public class ConsultationResponse {
             .managerNote(consultation.getManagerNote())
             .createdAt(consultation.getCreatedAt())
             .confirmedAt(consultation.getConfirmedAt())
-            .completedAt(consultation.getCompletedAt())
+
+            .adjustedDate(consultation.getAdjustedDate())
+            .adjustedTime(consultation.getAdjustedTime())
+            .adjustmentReason(consultation.getAdjustmentReason())
+            .adjustmentRequestedAt(consultation.getAdjustmentRequestedAt())
+            .userResponse(consultation.getUserResponse())
+            .userResponseAt(consultation.getUserResponseAt())
+            .isActive(consultation.getIsActive())
             .build();
     }
 }

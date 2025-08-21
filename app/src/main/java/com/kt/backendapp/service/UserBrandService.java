@@ -210,6 +210,11 @@ public class UserBrandService {
                 // 이미 찜한 상태면 찜해제
                 log.info("이미 찜한 브랜드입니다. 찜해제를 진행합니다.");
                 savedBrandRepository.deleteByUserUserIdAndBrandBrandId(userId, brandId);
+                
+                // 브랜드 찜 수 감소
+                brandDetailRepository.decrementSaveCount(brandId);
+                log.info("브랜드 찜 수 감소 완료");
+                
                 log.info("=== 브랜드 찜해제 완료 ===");
                 return false; // 찜해제됨
             } else {
@@ -238,6 +243,11 @@ public class UserBrandService {
                 
                 log.info("SavedBrand 저장 중...");
                 savedBrandRepository.save(savedBrand);
+                
+                // 브랜드 찜 수 증가
+                brandDetailRepository.incrementSaveCount(brandId);
+                log.info("브랜드 찜 수 증가 완료");
+                
                 log.info("=== 브랜드 찜하기 완료 ===");
                 return true; // 찜하기됨
             }

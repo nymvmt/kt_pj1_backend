@@ -20,9 +20,12 @@ public class Notification {
     @Column(name = "notification_id")
     private Long notificationId;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient_id")
-    private User recipient;
+    @Column(name = "recipient_id")
+    private Long recipientId;
+    
+    @Column(name = "recipient_type")
+    @Enumerated(EnumType.STRING)
+    private RecipientType recipientType;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "consultation_id")

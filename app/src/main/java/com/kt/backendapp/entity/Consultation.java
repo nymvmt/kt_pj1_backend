@@ -50,6 +50,31 @@ public class Consultation {
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
     
-    @Column(name = "completed_at")
-    private LocalDateTime completedAt;
+
+    
+    // 상담 일정 조정 관련 필드들
+    @Column(name = "adjusted_date")
+    private LocalDate adjustedDate;
+    
+    @Column(name = "adjusted_time")
+    private LocalTime adjustedTime;
+    
+    @Column(name = "adjustment_reason", columnDefinition = "TEXT")
+    private String adjustmentReason;
+    
+    @Column(name = "adjustment_requested_at")
+    private LocalDateTime adjustmentRequestedAt;
+    
+    // 사용자 응답 관련 필드들
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_response")
+    private UserResponseType userResponse;
+    
+    @Column(name = "user_response_at")
+    private LocalDateTime userResponseAt;
+    
+    // 중복 신청 제한을 위한 활성 상태
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
 }

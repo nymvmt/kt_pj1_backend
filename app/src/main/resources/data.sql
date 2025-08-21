@@ -1,5 +1,20 @@
 -- 중복 실행 방지를 위한 데이터 존재 확인 후 삽입
 
+-- 상담 상태 데이터 (중복 방지)
+INSERT INTO consultation_status (status_code, status_name) 
+SELECT 1, 'PENDING' WHERE NOT EXISTS (SELECT 1 FROM consultation_status WHERE status_code = 1);
+
+INSERT INTO consultation_status (status_code, status_name) 
+SELECT 2, 'RESCHEDULE_REQUEST' WHERE NOT EXISTS (SELECT 1 FROM consultation_status WHERE status_code = 2);
+
+INSERT INTO consultation_status (status_code, status_name) 
+SELECT 3, 'CONFIRMED' WHERE NOT EXISTS (SELECT 1 FROM consultation_status WHERE status_code = 3);
+
+
+
+INSERT INTO consultation_status (status_code, status_name) 
+SELECT 5, 'CANCELLED' WHERE NOT EXISTS (SELECT 1 FROM consultation_status WHERE status_code = 5);
+
 -- 카테고리 데이터 (중복 방지)
 INSERT INTO brand_category (category_name) 
 SELECT '외식' WHERE NOT EXISTS (SELECT 1 FROM brand_category WHERE category_name = '외식');
