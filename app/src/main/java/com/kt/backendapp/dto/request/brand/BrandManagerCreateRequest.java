@@ -39,19 +39,24 @@ public class BrandManagerCreateRequest {
     @NotNull(message = "카테고리는 필수입니다.")
     private Long categoryId;
     
-    // 브랜드 상세 정보
+    // 브랜드 상세 정보 (모두 필수)
+    @NotNull(message = "가맹비는 필수입니다.")
     @Positive(message = "가맹비는 0보다 커야 합니다.")
     private BigDecimal initialCost;
     
+    @NotNull(message = "총 창업비용은 필수입니다.")
     @Positive(message = "총 창업비용은 0보다 커야 합니다.")
     private BigDecimal totalInvestment;
     
+    @NotNull(message = "평균 월매출은 필수입니다.")
     @Positive(message = "평균 월매출은 0보다 커야 합니다.")
     private BigDecimal avgMonthlyRevenue;
     
+    @NotNull(message = "매장수는 필수입니다.")
     @Positive(message = "매장수는 0보다 커야 합니다.")
     private Integer storeCount;
     
+    @NotBlank(message = "브랜드 설명은 필수입니다.")
     @Size(max = 500, message = "브랜드 설명은 500자를 초과할 수 없습니다.")
     private String brandDescription;
 }

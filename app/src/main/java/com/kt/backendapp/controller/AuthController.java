@@ -10,12 +10,14 @@ import com.kt.backendapp.dto.response.brand.BrandManagerResponse;
 import com.kt.backendapp.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
     
     private final AuthService authService;
@@ -62,13 +64,18 @@ public class AuthController {
     @PostMapping("/manager/register")
     public ResponseEntity<ApiResponse<BrandManagerResponse>> managerRegister(
             @Valid @RequestBody BrandManagerCreateRequest request) {
+        log.info("매니저 회원가입 요청: email={}, name={}, brandName={}", 
+                request.getEmail(), request.getName(), request.getBrandName());
         try {
             BrandManagerResponse response = authService.managerRegister(request);
+            log.info("매니저 회원가입 성공: email={}", request.getEmail());
             return ResponseEntity.ok(ApiResponse.success(response, "매니저 회원가입 및 브랜드 등록이 완료되었습니다."));
         } catch (IllegalArgumentException e) {
+            log.error("매니저 회원가입 실패 (IllegalArgumentException): {}", e.getMessage());
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error("REGISTRATION_FAILED", e.getMessage()));
         } catch (Exception e) {
+            log.error("매니저 회원가입 실패 (Exception): {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
                 .body(ApiResponse.error("INTERNAL_ERROR", "서버 오류가 발생했습니다."));
         }

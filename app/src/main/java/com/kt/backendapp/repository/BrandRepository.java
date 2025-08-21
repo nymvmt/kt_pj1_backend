@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
+import com.kt.backendapp.entity.BrandCategory;
 
 @Repository
 public interface BrandRepository extends JpaRepository<Brand, Long> {
@@ -77,6 +77,12 @@ public interface BrandRepository extends JpaRepository<Brand, Long> {
     Long countByCategoryCategoryId(Long categoryId);
     
     /**
+     * 카테고리별 브랜드 수 조회 (BrandCategory 엔티티로)
+     * - 카테고리 목록 조회 시 각 카테고리의 브랜드 개수 표시용
+     */
+    Long countByCategory(BrandCategory category);
+    
+    /**
      * 카테고리 내 브랜드 목록 조회 (연관 엔티티 포함)
      * - 특정 카테고리의 모든 브랜드를 상세 정보와 함께 조회
      * - 조회수 높은 순으로 정렬
@@ -89,4 +95,17 @@ public interface BrandRepository extends JpaRepository<Brand, Long> {
         "WHERE c.categoryId = :categoryId " +
         "ORDER BY d.viewCount DESC")
     List<Brand> findBrandsByCategoryWithDetails(@Param("categoryId") Long categoryId);
+    
+    /**
+     * 브랜드명으로 검색 (대소문자 구분 없음)
+     * - 키워드가 포함된 브랜드명을 가진 브랜드들을 검색
+     * - 연관 엔티티와 함께 조회
+     */
+    @Query("SELECT b FROM Brand b " +
+        "LEFT JOIN FETCH b.details d " +
+        "LEFT JOIN FETCH b.category c " +
+        "LEFT JOIN FETCH b.manager m " +
+        "WHERE LOWER(b.brandName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+        "ORDER BY d.viewCount DESC")
+    List<Brand> findByBrandNameContainingIgnoreCase(@Param("keyword") String keyword);
 }

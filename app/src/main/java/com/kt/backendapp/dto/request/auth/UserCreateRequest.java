@@ -27,6 +27,7 @@ public class UserCreateRequest {
     @Size(max = 100, message = "이름은 100자를 초과할 수 없습니다.")
     private String name;
     
+    @NotBlank(message = "전화번호는 필수입니다.")
     @Size(max = 20, message = "전화번호는 20자를 초과할 수 없습니다.")
     private String phone;
 }

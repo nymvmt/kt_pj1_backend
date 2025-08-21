@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -69,7 +70,7 @@ public class AuthService {
     /**
      * 매니저 회원가입 + 브랜드 동시 등록 (상세 정보 포함)
      */
-    @Transactional
+    @Transactional(readOnly = false)
     public BrandManagerResponse managerRegister(BrandManagerCreateRequest request) {
         // 1. 매니저 이메일 중복 체크
         if (brandManagerRepository.existsByEmail(request.getEmail())) {
@@ -85,7 +86,24 @@ public class AuthService {
         BrandCategory category = brandCategoryRepository.findById(request.getCategoryId())
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
         
-        // 4. BrandManager 생성
+        // 4. 브랜드 상세 정보 유효성 검증
+        if (request.getInitialCost() == null || request.getInitialCost().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("가맹비는 필수이며 0보다 커야 합니다.");
+        }
+        if (request.getTotalInvestment() == null || request.getTotalInvestment().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("총 창업비용은 필수이며 0보다 커야 합니다.");
+        }
+        if (request.getAvgMonthlyRevenue() == null || request.getAvgMonthlyRevenue().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("평균 월매출은 필수이며 0보다 커야 합니다.");
+        }
+        if (request.getStoreCount() == null || request.getStoreCount() <= 0) {
+            throw new IllegalArgumentException("매장수는 필수이며 0보다 커야 합니다.");
+        }
+        if (request.getBrandDescription() == null || request.getBrandDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("브랜드 설명은 필수입니다.");
+        }
+        
+        // 5. BrandManager 생성
         BrandManager manager = BrandManager.builder()
             .name(request.getName())
             .email(request.getEmail())
@@ -94,7 +112,7 @@ public class AuthService {
             .build();
         BrandManager savedManager = brandManagerRepository.save(manager);
         
-        // 5. Brand 생성 (매니저 + 카테고리 연결)
+        // 6. Brand 생성 (매니저 + 카테고리 연결)
         Brand brand = Brand.builder()
             .brandName(request.getBrandName())
             .category(category)
@@ -102,18 +120,22 @@ public class AuthService {
             .build();
         Brand savedBrand = brandRepository.save(brand);
         
-        // 6. BrandDetail 생성 (브랜드 연결 + 모든 상세 정보 입력)
+        // 7. BrandDetail 생성 (브랜드 연결 + 모든 상세 정보 입력 - 필수)
         BrandDetail brandDetail = BrandDetail.builder()
             .brand(savedBrand)
             .initialCost(request.getInitialCost())
             .totalInvestment(request.getTotalInvestment())
             .avgMonthlyRevenue(request.getAvgMonthlyRevenue())
             .storeCount(request.getStoreCount())
-            .brandDescription(request.getBrandDescription())
+            .brandDescription(request.getBrandDescription().trim())
             .viewCount(0L)  // 초기값
             .saveCount(0L)  // 초기값
             .build();
         brandDetailRepository.save(brandDetail);
+        
+        // 8. Brand 엔티티에 BrandDetail 연결 (양방향 관계 설정)
+        savedBrand.setDetails(brandDetail);
+        brandRepository.save(savedBrand);
         
         // 8. 응답 생성 (관리 브랜드 포함 - 리스트 방식)
         return BrandManagerResponse.from(savedManager, List.of(savedBrand));

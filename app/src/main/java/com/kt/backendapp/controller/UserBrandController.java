@@ -10,9 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 @Slf4j
 public class UserBrandController {
@@ -29,6 +30,25 @@ public class UserBrandController {
         try {
             List<BrandListResponse> response = userBrandService.getUserBrands(userId);
             return ResponseEntity.ok(ApiResponse.success(response, "유저용 브랜드 목록 조회가 완료되었습니다."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("INVALID_REQUEST", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(ApiResponse.error("INTERNAL_ERROR", "서버 오류가 발생했습니다."));
+        }
+    }
+    
+    /**
+     * 사용자의 찜한 브랜드 목록 조회 (User-Id 헤더 필요)
+     * GET /api/user/brands/saved
+     */
+    @GetMapping("/brands/saved")
+    public ResponseEntity<ApiResponse<List<BrandListResponse>>> getSavedBrands(
+            @RequestHeader("User-Id") Long userId) {
+        try {
+            List<BrandListResponse> response = userBrandService.getSavedBrands(userId);
+            return ResponseEntity.ok(ApiResponse.success(response, "찜한 브랜드 목록 조회가 완료되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error("INVALID_REQUEST", e.getMessage()));
@@ -59,16 +79,17 @@ public class UserBrandController {
     }
     
     /**
-     * 브랜드 찜하기 (User-Id 헤더 필요)
-     * POST /api/v1/user/brands/{id}/save
+     * 브랜드 찜하기/찜해제 토글 (User-Id 헤더 필요)
+     * POST /api/user/brands/{brandId}/save
      */
-    @PostMapping("/brands/{id}/save")
-    public ResponseEntity<ApiResponse<String>> saveBrand(
-            @PathVariable Long id,
+    @PostMapping("/brands/{brandId}/save")
+    public ResponseEntity<ApiResponse<Boolean>> toggleSavedBrand(
+            @PathVariable Long brandId,
             @RequestHeader("User-Id") Long userId) {
         try {
-            userBrandService.saveBrand(id, userId);
-            return ResponseEntity.ok(ApiResponse.success("success", "브랜드가 찜 목록에 추가되었습니다."));
+            boolean isSaved = userBrandService.toggleSavedBrand(brandId, userId);
+            String message = isSaved ? "브랜드를 찜했습니다." : "브랜드 찜을 해제했습니다.";
+            return ResponseEntity.ok(ApiResponse.success(isSaved, message));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error("INVALID_REQUEST", e.getMessage()));
@@ -79,19 +100,16 @@ public class UserBrandController {
     }
     
     /**
-     * 브랜드 찜 해제 (User-Id 헤더 필요)
-     * DELETE /api/v1/user/brands/{id}/save
+     * 브랜드 찜 상태 조회 (User-Id 헤더 필요)
+     * POST /api/user/brands/save-status
      */
-    @DeleteMapping("/brands/{id}/save")
-    public ResponseEntity<ApiResponse<String>> unsaveBrand(
-            @PathVariable Long id,
+    @PostMapping("/brands/save-status")
+    public ResponseEntity<ApiResponse<Map<Long, Boolean>>> getBrandSaveStatus(
+            @RequestBody List<Long> brandIds,
             @RequestHeader("User-Id") Long userId) {
         try {
-            userBrandService.unsaveBrand(id, userId);
-            return ResponseEntity.ok(ApiResponse.success("success", "브랜드가 찜 목록에서 제거되었습니다."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error("INVALID_REQUEST", e.getMessage()));
+            Map<Long, Boolean> saveStatus = userBrandService.getBrandSaveStatus(brandIds, userId);
+            return ResponseEntity.ok(ApiResponse.success(saveStatus, "브랜드 찜 상태 조회가 완료되었습니다."));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                 .body(ApiResponse.error("INTERNAL_ERROR", "서버 오류가 발생했습니다."));

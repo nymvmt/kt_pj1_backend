@@ -5,20 +5,60 @@ import com.kt.backendapp.dto.request.brand.BrandCreateRequest;
 import com.kt.backendapp.dto.request.brand.BrandUpdateRequest;
 import com.kt.backendapp.dto.response.brand.BrandDetailResponse;
 import com.kt.backendapp.dto.response.brand.BrandListResponse;
+import com.kt.backendapp.dto.response.brand.CategoryResponse;
 import com.kt.backendapp.service.ManagerBrandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/manager")
+@RequestMapping("/api/manager")
 @RequiredArgsConstructor
+@Slf4j
 public class ManagerBrandController {
     
     private final ManagerBrandService managerBrandService;
+    
+    /**
+     * 카테고리 목록 조회
+     * GET /api/manager/categories
+     */
+    @GetMapping("/categories")
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getCategories() {
+        try {
+            List<CategoryResponse> response = managerBrandService.getCategories();
+            return ResponseEntity.ok(ApiResponse.success(response, "카테고리 목록 조회가 완료되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(ApiResponse.error("INTERNAL_ERROR", "서버 오류가 발생했습니다."));
+        }
+    }
+    
+    /**
+     * 전체 브랜드 목록 조회 (매니저용 - 브랜드 추가 가능)
+     * GET /api/manager/brands/public
+     */
+    @GetMapping("/brands/public")
+    public ResponseEntity<ApiResponse<List<BrandListResponse>>> getAllBrands(
+            @RequestHeader(value = "Manager-Id", required = false) Long managerId) {
+        try {
+            if (managerId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("MISSING_HEADER", "Manager-Id 헤더가 필요합니다."));
+            }
+            
+            List<BrandListResponse> response = managerBrandService.getAllBrands(managerId);
+            return ResponseEntity.ok(ApiResponse.success(response, "전체 브랜드 목록 조회가 완료되었습니다."));
+        } catch (Exception e) {
+            log.error("전체 브랜드 목록 조회 실패: managerId={}, error={}", managerId, e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                .body(ApiResponse.error("INTERNAL_ERROR", "서버 오류가 발생했습니다."));
+        }
+    }
     
     /**
      * 내 브랜드 목록 조회 (전체 목록)

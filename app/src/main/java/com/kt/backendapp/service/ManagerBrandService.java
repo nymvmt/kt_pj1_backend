@@ -4,6 +4,7 @@ import com.kt.backendapp.dto.request.brand.BrandCreateRequest;
 import com.kt.backendapp.dto.request.brand.BrandUpdateRequest;
 import com.kt.backendapp.dto.response.brand.BrandDetailResponse;
 import com.kt.backendapp.dto.response.brand.BrandListResponse;
+import com.kt.backendapp.dto.response.brand.CategoryResponse;
 import com.kt.backendapp.entity.*;
 import com.kt.backendapp.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,47 @@ public class ManagerBrandService {
     private final BrandRepository brandRepository;
     private final BrandCategoryRepository brandCategoryRepository;
     private final BrandManagerRepository brandManagerRepository;
+    private final BrandDetailRepository brandDetailRepository;
     private final ViewCountService viewCountService;
+    
+    /**
+     * 카테고리 목록 조회
+     * GET /api/manager/categories
+     */
+    public List<CategoryResponse> getCategories() {
+        List<BrandCategory> categories = brandCategoryRepository.findAll();
+        
+        return categories.stream()
+            .map(category -> {
+                // 각 카테고리별 브랜드 수 계산
+                Long brandCount = brandRepository.countByCategory(category);
+                return CategoryResponse.from(category, brandCount);
+            })
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * 전체 브랜드 목록 조회 (매니저용 - 브랜드 추가 가능)
+     * GET /api/manager/brands/all
+     */
+    public List<BrandListResponse> getAllBrands(Long managerId) {
+        // 전체 브랜드 조회 (페이징 없음)
+        List<Brand> brands = brandRepository.findAllWithDetails();
+        
+        return brands.stream()
+            .map(brand -> {
+                // 매니저가 관리하는 브랜드인지 확인
+                boolean isManaged = brand.getManager().getManagerId().equals(managerId);
+                return BrandListResponse.from(brand, false, isManaged); // 매니저는 찜 기능 없음, 관리 여부 표시
+            })
+            .sorted((a, b) -> {
+                // 매니저가 관리하는 브랜드를 상위로 정렬
+                if (a.isManaged() && !b.isManaged()) return -1;
+                if (!a.isManaged() && b.isManaged()) return 1;
+                return 0;
+            })
+            .collect(Collectors.toList());
+    }
     
     /**
      * 매니저의 브랜드 목록 조회 (전체 목록)
@@ -52,6 +93,10 @@ public class ManagerBrandService {
             throw new IllegalArgumentException("해당 브랜드에 대한 권한이 없습니다.");
         }
         
+        // BrandDetail 조회
+        BrandDetail brandDetail = brandDetailRepository.findByBrandBrandId(brandId)
+            .orElseThrow(() -> new IllegalArgumentException("브랜드 상세 정보를 찾을 수 없습니다."));
+        
         // 조회수 증가 (시스템 관리값) - 공통 서비스 사용
         viewCountService.incrementViewCount(brandId);
         
@@ -66,13 +111,13 @@ public class ManagerBrandService {
                 .email(brand.getManager().getEmail())
                 .phone(brand.getManager().getPhone())
                 .build())
-            .viewCount(brand.getDetails().getViewCount())
-            .saveCount(brand.getDetails().getSaveCount())
-            .initialCost(brand.getDetails().getInitialCost())
-            .totalInvestment(brand.getDetails().getTotalInvestment())
-            .avgMonthlyRevenue(brand.getDetails().getAvgMonthlyRevenue())
-            .storeCount(brand.getDetails().getStoreCount())
-            .brandDescription(brand.getDetails().getBrandDescription())
+            .viewCount(brandDetail.getViewCount())
+            .saveCount(brandDetail.getSaveCount())
+            .initialCost(brandDetail.getInitialCost())
+            .totalInvestment(brandDetail.getTotalInvestment())
+            .avgMonthlyRevenue(brandDetail.getAvgMonthlyRevenue())
+            .storeCount(brandDetail.getStoreCount())
+            .brandDescription(brandDetail.getBrandDescription())
             .isSaved(false) // 매니저는 찜 기능 없음
             .build();
     }
@@ -115,8 +160,12 @@ public class ManagerBrandService {
             .saveCount(0L)
             .build();
         
+        // Brand에 BrandDetail 연결
+        brand.setDetails(brandDetail);
+        
         // 저장
         Brand savedBrand = brandRepository.save(brand);
+        brandDetailRepository.save(brandDetail);
         
         // 응답 생성
         return BrandDetailResponse.builder()

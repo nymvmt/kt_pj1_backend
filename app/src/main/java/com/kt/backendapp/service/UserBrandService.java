@@ -3,17 +3,23 @@ package com.kt.backendapp.service;
 import com.kt.backendapp.dto.response.brand.BrandDetailResponse;
 import com.kt.backendapp.dto.response.brand.BrandListResponse;
 import com.kt.backendapp.entity.Brand;
+import com.kt.backendapp.entity.SavedBrand;
 import com.kt.backendapp.repository.BrandRepository;
 import com.kt.backendapp.repository.BrandDetailRepository;
 import com.kt.backendapp.repository.SavedBrandRepository;
+import com.kt.backendapp.repository.UserRepository;
+import com.kt.backendapp.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +31,7 @@ public class UserBrandService {
     private final SavedBrandRepository savedBrandRepository;
     private final BrandDetailRepository brandDetailRepository;
     private final ViewCountService viewCountService;
+    private final UserRepository userRepository;
     
     /**
      * 유저용 브랜드 목록 조회 (찜 상태 포함)
@@ -178,6 +185,70 @@ public class UserBrandService {
     }
     
     /**
+     * 브랜드 찜하기/찜해제 토글
+     */
+    @Transactional
+    public boolean toggleSavedBrand(Long brandId, Long userId) {
+        log.info("=== 브랜드 찜하기/찜해제 토글: brandId={}, userId={} ===", brandId, userId);
+        
+        try {
+            // 입력값 검증
+            if (brandId == null) {
+                throw new IllegalArgumentException("브랜드 ID가 null입니다.");
+            }
+            if (userId == null) {
+                throw new IllegalArgumentException("사용자 ID가 null입니다.");
+            }
+            
+            log.info("입력값 검증 완료: brandId={}, userId={}", brandId, userId);
+            
+            // 이미 찜한 상태인지 확인
+            boolean isAlreadySaved = savedBrandRepository.existsByUserUserIdAndBrandBrandId(userId, brandId);
+            log.info("현재 찜 상태: {}", isAlreadySaved);
+            
+            if (isAlreadySaved) {
+                // 이미 찜한 상태면 찜해제
+                log.info("이미 찜한 브랜드입니다. 찜해제를 진행합니다.");
+                savedBrandRepository.deleteByUserUserIdAndBrandBrandId(userId, brandId);
+                log.info("=== 브랜드 찜해제 완료 ===");
+                return false; // 찜해제됨
+            } else {
+                // 찜하지 않은 상태면 찜하기
+                log.info("찜하지 않은 브랜드입니다. 찜하기를 진행합니다.");
+                
+                // 브랜드 존재 여부 확인
+                log.info("브랜드 존재 여부 확인 중: brandId={}", brandId);
+                Brand brand = brandRepository.findById(brandId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 브랜드입니다."));
+                log.info("브랜드 조회 완료: {}", brand.getBrandName());
+                
+                // 사용자 존재 여부 확인
+                log.info("사용자 존재 여부 확인 중: userId={}", userId);
+                User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                log.info("사용자 조회 완료: {}", user.getName());
+                
+                // SavedBrand 생성 및 저장
+                log.info("SavedBrand 생성 중...");
+                SavedBrand savedBrand = SavedBrand.builder()
+                    .user(user)
+                    .brand(brand)
+                    .savedAt(LocalDateTime.now())
+                    .build();
+                
+                log.info("SavedBrand 저장 중...");
+                savedBrandRepository.save(savedBrand);
+                log.info("=== 브랜드 찜하기 완료 ===");
+                return true; // 찜하기됨
+            }
+            
+        } catch (Exception e) {
+            log.error("브랜드 찜하기/찜해제 토글 중 오류 발생: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
      * 브랜드 찜하기
      */
     @Transactional
@@ -190,12 +261,22 @@ public class UserBrandService {
                 throw new IllegalArgumentException("이미 찜한 브랜드입니다.");
             }
             
-            // TODO: SavedBrand 엔티티 생성 및 저장
-            // SavedBrand savedBrand = SavedBrand.builder()
-            //     .user(User.builder().userId(userId).build())
-            //     .brand(Brand.builder().brandId(brandId).build())
-            //     .build();
-            // savedBrandRepository.save(savedBrand);
+            // 브랜드 존재 여부 확인
+            Brand brand = brandRepository.findById(brandId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 브랜드입니다."));
+            
+            // 사용자 존재 여부 확인
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+            
+            // SavedBrand 생성 및 저장
+            SavedBrand savedBrand = SavedBrand.builder()
+                .user(user)
+                .brand(brand)
+                .savedAt(LocalDateTime.now())
+                .build();
+            
+            savedBrandRepository.save(savedBrand);
             
             log.info("=== 브랜드 찜하기 완료 ===");
             
@@ -218,13 +299,75 @@ public class UserBrandService {
                 throw new IllegalArgumentException("찜하지 않은 브랜드입니다.");
             }
             
-            // TODO: SavedBrand 엔티티 삭제
-            // savedBrandRepository.deleteByUserUserIdAndBrandBrandId(userId, brandId);
+            // SavedBrand 엔티티 삭제
+            savedBrandRepository.deleteByUserUserIdAndBrandBrandId(userId, brandId);
             
             log.info("=== 브랜드 찜 해제 완료 ===");
             
         } catch (Exception e) {
             log.error("브랜드 찜 해제 중 오류 발생: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+    
+    /**
+     * 사용자의 찜한 브랜드 목록 조회
+     */
+    public List<BrandListResponse> getSavedBrands(Long userId) {
+        log.info("=== 찜한 브랜드 목록 조회 시작: userId={} ===", userId);
+        
+        try {
+            // 사용자의 찜한 브랜드 목록 조회 (브랜드 정보 포함)
+            List<SavedBrand> savedBrands = savedBrandRepository.findByUserUserIdWithBrand(userId);
+            log.info("Repository에서 조회된 찜한 브랜드 수: {}", savedBrands != null ? savedBrands.size() : "null");
+            
+            if (savedBrands == null || savedBrands.isEmpty()) {
+                log.info("찜한 브랜드가 없습니다.");
+                return new ArrayList<>();
+            }
+            
+            // SavedBrand → BrandListResponse 변환
+            List<BrandListResponse> responses = savedBrands.stream()
+                .map(savedBrand -> {
+                    Brand brand = savedBrand.getBrand();
+                    if (brand == null) {
+                        log.warn("찜한 브랜드의 브랜드 정보가 null입니다: savedBrandId={}", savedBrand.getSaveId());
+                        return null;
+                    }
+                    return BrandListResponse.from(brand, true); // 찜한 상태는 true
+                })
+                .filter(response -> response != null) // null 제거
+                .collect(Collectors.toList());
+            
+            log.info("변환 완료된 응답 수: {}", responses.size());
+            log.info("=== 찜한 브랜드 목록 조회 완료 ===");
+            return responses;
+            
+        } catch (Exception e) {
+            log.error("찜한 브랜드 목록 조회 중 오류 발생: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+    
+    /**
+     * 브랜드 찜 상태 조회
+     */
+    public Map<Long, Boolean> getBrandSaveStatus(List<Long> brandIds, Long userId) {
+        log.info("=== 브랜드 찜 상태 조회 시작: brandIds={}, userId={} ===", brandIds, userId);
+        
+        try {
+            Map<Long, Boolean> saveStatus = new HashMap<>();
+            
+            for (Long brandId : brandIds) {
+                boolean isSaved = savedBrandRepository.existsByUserUserIdAndBrandBrandId(userId, brandId);
+                saveStatus.put(brandId, isSaved);
+            }
+            
+            log.info("=== 브랜드 찜 상태 조회 완료 ===");
+            return saveStatus;
+            
+        } catch (Exception e) {
+            log.error("브랜드 찜 상태 조회 중 오류 발생: {}", e.getMessage(), e);
             throw e;
         }
     }

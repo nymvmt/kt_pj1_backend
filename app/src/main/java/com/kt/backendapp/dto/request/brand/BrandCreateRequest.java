@@ -24,8 +24,7 @@ public class BrandCreateRequest {
     @NotNull(message = "카테고리는 필수입니다.")
     private Long categoryId;
     
-    @NotNull(message = "매니저는 필수입니다.")
-    private Long managerId;
+    // 매니저 ID는 헤더에서 받으므로 제거
     
     // BrandDetail 정보
     @Positive(message = "가맹비는 0보다 커야 합니다.")
