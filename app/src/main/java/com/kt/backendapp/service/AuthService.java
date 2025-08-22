@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AuthService {
+public class AuthService implements IAuthService {
     
     private final UserRepository userRepository;
     private final BrandManagerRepository brandManagerRepository;

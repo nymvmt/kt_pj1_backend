@@ -25,12 +25,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
-public class UserBrandService {
+public class UserBrandService implements IUserBrandService {
     
     private final BrandRepository brandRepository;
     private final SavedBrandRepository savedBrandRepository;
     private final BrandDetailRepository brandDetailRepository;
-    private final ViewCountService viewCountService;
+    private final IViewCountService viewCountService;
     private final UserRepository userRepository;
     
     /**

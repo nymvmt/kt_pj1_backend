@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
-public class ManagerBrandService {
+public class ManagerBrandService implements IManagerBrandService {
     
     private final BrandRepository brandRepository;
     private final BrandCategoryRepository brandCategoryRepository;
     private final BrandManagerRepository brandManagerRepository;
     private final BrandDetailRepository brandDetailRepository;
-    private final ViewCountService viewCountService;
+    private final IViewCountService viewCountService;
     
     /**
      * 카테고리 목록 조회

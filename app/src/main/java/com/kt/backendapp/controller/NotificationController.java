@@ -5,7 +5,7 @@ import com.kt.backendapp.dto.common.PageResponse;
 import com.kt.backendapp.dto.response.notification.NotificationResponse;
 import com.kt.backendapp.entity.Notification;
 import com.kt.backendapp.entity.RecipientType;
-import com.kt.backendapp.service.NotificationService;
+import com.kt.backendapp.service.INotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class NotificationController {
     
-    private final NotificationService notificationService;
+    private final INotificationService notificationService;
     
     /**
      * 사용자 알림 목록 조회

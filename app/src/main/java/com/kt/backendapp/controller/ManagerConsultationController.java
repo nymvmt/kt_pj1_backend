@@ -4,7 +4,7 @@ import com.kt.backendapp.dto.common.ApiResponse;
 import com.kt.backendapp.dto.common.PageResponse;
 import com.kt.backendapp.dto.request.consultation.ConsultationRescheduleRequest;
 import com.kt.backendapp.dto.response.consultation.ConsultationResponse;
-import com.kt.backendapp.service.ConsultationService;
+import com.kt.backendapp.service.IConsultationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class ManagerConsultationController {
     
-    private final ConsultationService consultationService;
+    private final IConsultationService consultationService;
     
     /**
      * 매니저의 상담 목록 조회

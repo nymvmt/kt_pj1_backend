@@ -4,7 +4,7 @@ import com.kt.backendapp.dto.common.ApiResponse;
 import com.kt.backendapp.dto.response.brand.BrandDetailResponse;
 import com.kt.backendapp.dto.response.brand.BrandListResponse;
 import com.kt.backendapp.dto.response.brand.CategoryResponse;
-import com.kt.backendapp.service.PublicBrandService;
+import com.kt.backendapp.service.IPublicBrandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.util.List;
 @Slf4j
 public class PublicBrandController {
     
-    private final PublicBrandService publicBrandService;
+    private final IPublicBrandService publicBrandService;
     
     /**
      * 공개 브랜드 목록 조회 (인증 불필요, 매니저인 경우 isManaged 필드 포함)

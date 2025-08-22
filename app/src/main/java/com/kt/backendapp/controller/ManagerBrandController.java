@@ -6,7 +6,7 @@ import com.kt.backendapp.dto.request.brand.BrandUpdateRequest;
 import com.kt.backendapp.dto.response.brand.BrandDetailResponse;
 import com.kt.backendapp.dto.response.brand.BrandListResponse;
 import com.kt.backendapp.dto.response.brand.CategoryResponse;
-import com.kt.backendapp.service.ManagerBrandService;
+import com.kt.backendapp.service.IManagerBrandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 public class ManagerBrandController {
     
-    private final ManagerBrandService managerBrandService;
+    private final IManagerBrandService managerBrandService;
     
     /**
      * 카테고리 목록 조회

@@ -21,13 +21,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ConsultationService {
+public class ConsultationService implements IConsultationService {
     
     private final ConsultationRepository consultationRepository;
     private final UserRepository userRepository;
     private final BrandRepository brandRepository;
     private final ConsultationStatusRepository consultationStatusRepository;
-    private final NotificationService notificationService;
+    private final INotificationService notificationService;
     
     /**
      * 상담 신청 (중복 신청 방지 로직 포함)

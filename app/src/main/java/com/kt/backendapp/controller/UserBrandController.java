@@ -3,7 +3,7 @@ package com.kt.backendapp.controller;
 import com.kt.backendapp.dto.common.ApiResponse;
 import com.kt.backendapp.dto.response.brand.BrandDetailResponse;
 import com.kt.backendapp.dto.response.brand.BrandListResponse;
-import com.kt.backendapp.service.UserBrandService;
+import com.kt.backendapp.service.IUserBrandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.util.Map;
 @Slf4j
 public class UserBrandController {
     
-    private final UserBrandService userBrandService;
+    private final IUserBrandService userBrandService;
     
     /**
      * 유저용 브랜드 목록 조회 (User-Id 헤더 필요)

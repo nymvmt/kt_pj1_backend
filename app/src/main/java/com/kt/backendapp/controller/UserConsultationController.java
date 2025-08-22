@@ -5,7 +5,7 @@ import com.kt.backendapp.dto.common.PageResponse;
 import com.kt.backendapp.dto.request.consultation.ConsultationCreateRequest;
 import com.kt.backendapp.dto.request.consultation.ConsultationUserResponseRequest;
 import com.kt.backendapp.dto.response.consultation.ConsultationResponse;
-import com.kt.backendapp.service.ConsultationService;
+import com.kt.backendapp.service.IConsultationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.List;
 @Slf4j
 public class UserConsultationController {
     
-    private final ConsultationService consultationService;
+    private final IConsultationService consultationService;
     
     /**
      * 상담 신청

@@ -7,7 +7,7 @@ import com.kt.backendapp.dto.request.brand.BrandManagerCreateRequest;
 import com.kt.backendapp.dto.response.auth.LoginResponse;
 import com.kt.backendapp.dto.response.auth.UserResponse;
 import com.kt.backendapp.dto.response.brand.BrandManagerResponse;
-import com.kt.backendapp.service.AuthService;
+import com.kt.backendapp.service.IAuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class AuthController {
     
-    private final AuthService authService;
+    private final IAuthService authService;
     
     /**
      * 사용자 회원가입

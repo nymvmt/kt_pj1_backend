@@ -21,12 +21,12 @@ import com.kt.backendapp.entity.BrandCategory;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
-public class PublicBrandService {
+public class PublicBrandService implements IPublicBrandService {
     
     private final BrandRepository brandRepository;
     private final BrandCategoryRepository brandCategoryRepository;
     private final SavedBrandRepository savedBrandRepository;
-    private final ViewCountService viewCountService;
+    private final IViewCountService viewCountService;
     
     /**
      * 공개 브랜드 목록 조회 (기본 정보만)

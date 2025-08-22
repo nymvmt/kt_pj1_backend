@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ViewCountService {
+public class ViewCountService implements IViewCountService {
     
     private final BrandDetailRepository brandDetailRepository;
     
